@@ -1,7 +1,7 @@
 /*
  * main.c
  *
- * Created: 05/03/2019 18:00:58
+ * Created: 05/03/2019 00:00:00
  *  Author: eduardo
  */ 
 
@@ -16,9 +16,9 @@
 /************************************************************************/
 
 #define YEAR        2019
-#define MOUNTH      4
-#define DAY         8
-#define WEEK        12
+#define MOUNTH      1
+#define DAY         1
+#define WEEK        1
 #define HOUR        0
 #define MINUTE      0
 #define SECOND      0
@@ -45,7 +45,7 @@
 volatile Bool f_rtt_alarme = false;
 
 volatile Bool but_flag;
-char buffert = [32];
+char buffert [32];
 char bufferv[32];
 char bufferd[32];
 
@@ -53,6 +53,7 @@ int pulso = 0;
 int vel = 0 ;
 int dist=0;
 
+int dv=0;
 
 
 /************************************************************************/
@@ -108,7 +109,7 @@ void RTC_Handler(void)
 			volatile uint32_t pul_minute;
 			volatile uint32_t pul_second;
 			rtc_get_time(RTC, &pul_hour, &pul_minute, &pul_second);
-			rtc_set_time_alarm(RTC, 1, pul_hour, 1, pul_minute+1, 0, pul_second);
+			rtc_set_time_alarm(RTC, 1, pul_hour, 1, pul_minute, 0, pul_second+1);
 			/// MUDAR HORARIO
 			
 	}
@@ -246,17 +247,32 @@ void font_draw_text(tFont *font, const char *text, int x, int y, int spacing) {
 int main(void) {
 	// Desliga watchdog
 	WDT->WDT_MR = WDT_MR_WDDIS;
-	
+	uint h,m,s;
+
 	
 	board_init();
 	sysclk_init();	
 	configure_lcd();
 	io_init();
+	rtc_set_time_alarm(RTC, 1, HOUR, 1, MINUTE, 1, SECOND+1);
 	
 	// Inicializa RTT com IRQ no alarme.
 	f_rtt_alarme = true;
-
+	
 	while(1) {
+		
+		/* Entrar em modo sleep */
+		pmc_sleep(SAM_PM_SMODE_SLEEP_WFI);
+		
+		
+		
+		rtc_get_time(RTC,&h,&m,&s);
+		
+		sprintf(buffert,"%d: %d: %d",h, m,s);
+		
+		//font_draw_text(&calibri_36, "Total time:", 50, 50, 1);
+		font_draw_text(&calibri_36, buffert, 50,50, 1);
+		
 		
 		if(but_flag){
 			
@@ -270,16 +286,13 @@ int main(void) {
       
 		  uint16_t pllPreScale = (int) (((float) 32768) / 2.0);
 		  uint32_t irqRTTvalue  = 4;
-		  
+		  dv= vel -  (2*pi *pulso)/irqRTTvalue;
 		  vel = (2*pi *pulso)/irqRTTvalue;
 		  dist += 2*pi* raio* pulso;
 		  
 		  sprintf(bufferv,"%02d",vel);
 		  sprintf(bufferd,"%02d",dist);
-		  //sprintf(bufferd,"%d: %d: %d: ",);
-		  //font_draw_text(&sourcecodepro_28, "bike", 50, 50, 1);
-		  //font_draw_text(&calibri_36, "Total time:", 50, 50, 1);
-		  font_draw_text(&arial_72, bufferd, 50, 50, 1);
+		  
 		  font_draw_text(&calibri_36, "Velocidade:", 50, 100, 1);
 		  font_draw_text(&arial_72, bufferv, 50, 150, 1);
 		  font_draw_text(&calibri_36, "Distancia:", 50, 250, 1);
@@ -301,9 +314,7 @@ int main(void) {
 		  pulso = 0;
     }
 		
-		
-		
-		
+
 		
 	}
 }

@@ -31,14 +31,31 @@
 #define pi 3.14
 #define raio 0.65
 /**
-* Botao
+* Botoes
 */
 #define BUT_PIO      PIOA
 #define BUT_PIO_ID   ID_PIOA
 #define BUT_IDX  11
 #define BUT_IDX_MASK (1 << BUT_IDX)
 
+#define BUT_PIO_ID1			  ID_PIOD
+#define BUT_PIO1			  PIOD
+#define BUT_PIN1				  28
+#define BUT_PIN_MASK1			  (1 << BUT_PIN1)
+
 #define BUT_DEBOUNCING_VALUE  79
+
+
+ typedef struct {
+	 const uint8_t *data;
+	 uint16_t width;
+	 uint16_t height;
+	 uint8_t dataSize;
+ } tImage;
+ 
+ #include "icones/play.h"
+ 
+
 
 /* variaveis globais                                                    */
 /************************************************************************/
@@ -65,6 +82,14 @@ static void RTT_iSnit(uint16_t pllPreScale, uint32_t IrqNPulses);
 struct ili9488_opt_t g_ili9488_display_opt;
 void RTC_init(void);
 
+struct botao {
+	uint16_t nome;
+	uint16_t x;
+	uint16_t y;
+	uint16_t size;
+	tImage *image;
+	void (*p_handler)(void);
+};
 /************************************************************************/
 /* interrupcoes                                                         */
 /************************************************************************/
@@ -213,6 +238,11 @@ void RTC_init(){
 
 }
 
+void draw_screen(void) {
+	ili9488_set_foreground_color(COLOR_CONVERT(COLOR_WHITE));
+	ili9488_draw_filled_rectangle(0, 0, ILI9488_LCD_WIDTH-1, ILI9488_LCD_HEIGHT-1);
+}
+
 
 //// FONTS
 void configure_lcd(void){
@@ -258,6 +288,21 @@ int main(void) {
 	
 	// Inicializa RTT com IRQ no alarme.
 	f_rtt_alarme = true;
+	
+		
+		struct botao playPause;
+		playPause.x = 150;
+		playPause.y = 120;
+		playPause.size = 100;
+		playPause.p_handler = but_callback;
+		playPause.image = &play;
+		
+		ili9488_draw_pixmap(playPause.x,
+							playPause.y,
+							playPause.image->width,
+							playPause.image->height,
+							playPause.image->data);
+		
 	
 	while(1) {
 		

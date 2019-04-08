@@ -638,6 +638,9 @@
     <Compile Include="src\main.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\play.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\sourcecodepro_28.h">
       <SubType>compile</SubType>
     </Compile>

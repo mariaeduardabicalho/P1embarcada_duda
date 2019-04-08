@@ -46,14 +46,7 @@
 #define BUT_DEBOUNCING_VALUE  79
 
 
- typedef struct {
-	 const uint8_t *data;
-	 uint16_t width;
-	 uint16_t height;
-	 uint8_t dataSize;
- } tImage;
- 
- #include "icones/play.h"
+
  
 
 
@@ -62,15 +55,21 @@
 volatile Bool f_rtt_alarme = false;
 
 volatile Bool but_flag;
+volatile Bool restart;
 char buffert [32];
 char bufferv[32];
 char bufferd[32];
+char buffermax[32];
 
 int pulso = 0;
 int vel = 0 ;
 int dist=0;
 
 int dv=0;
+
+int maxvel=0;
+
+
 
 
 /************************************************************************/
@@ -81,20 +80,18 @@ void io_init(void);
 static void RTT_iSnit(uint16_t pllPreScale, uint32_t IrqNPulses);
 struct ili9488_opt_t g_ili9488_display_opt;
 void RTC_init(void);
+void BUT_init(void);
 
-struct botao {
-	uint16_t nome;
-	uint16_t x;
-	uint16_t y;
-	uint16_t size;
-	tImage *image;
-	void (*p_handler)(void);
-};
+
 /************************************************************************/
 /* interrupcoes                                                         */
 /************************************************************************/
 void but_callback(void){
 	but_flag = true;
+}
+static void Button1_Handler(uint32_t id, uint32_t mask){
+		restart = true;
+	
 }
 
 void RTT_Handler(void)
@@ -156,7 +153,21 @@ void pin_toggle(Pio *pio, uint32_t mask){
 	else
 	pio_set(pio,mask);
 }
+void BUT_init(void){
+	/* config. pino botao em modo de entrada */
+	pmc_enable_periph_clk(BUT_PIO_ID);
+	pio_set_input(BUT_PIO, BUT_PIN_MASK1, PIO_PULLUP | PIO_DEBOUNCE);
 
+	/* config. interrupcao em borda de descida no botao do kit */
+	/* indica funcao (but_Handler) a ser chamada quando houver uma interrupção */
+	pio_enable_interrupt(BUT_PIO, BUT_PIN_MASK1);
+	pio_handler_set(BUT_PIO, BUT_PIO_ID, BUT_PIN_MASK1, PIO_IT_FALL_EDGE, Button1_Handler);
+
+	/* habilita interrupçcão do PIO que controla o botao */
+	/* e configura sua prioridade                        */
+	NVIC_EnableIRQ(BUT_PIO_ID);
+	NVIC_SetPriority(BUT_PIO_ID, 1);
+};
 void io_init(void){
 	/* led */
 	pmc_enable_periph_clk(LED_PIO_ID);
@@ -238,11 +249,6 @@ void RTC_init(){
 
 }
 
-void draw_screen(void) {
-	ili9488_set_foreground_color(COLOR_CONVERT(COLOR_WHITE));
-	ili9488_draw_filled_rectangle(0, 0, ILI9488_LCD_WIDTH-1, ILI9488_LCD_HEIGHT-1);
-}
-
 
 //// FONTS
 void configure_lcd(void){
@@ -289,7 +295,7 @@ int main(void) {
 	// Inicializa RTT com IRQ no alarme.
 	f_rtt_alarme = true;
 	
-		
+	/*	
 		struct botao playPause;
 		playPause.x = 150;
 		playPause.y = 120;
@@ -302,7 +308,8 @@ int main(void) {
 							playPause.image->width,
 							playPause.image->height,
 							playPause.image->data);
-		
+	*/	
+	BUT_init();
 	
 	while(1) {
 		
@@ -317,6 +324,11 @@ int main(void) {
 		
 		//font_draw_text(&calibri_36, "Total time:", 50, 50, 1);
 		font_draw_text(&calibri_36, buffert, 50,50, 1);
+		
+		if(restart){
+			dist=0;
+			
+		}
 		
 		
 		if(but_flag){
@@ -335,8 +347,13 @@ int main(void) {
 		  vel = (2*pi *pulso)/irqRTTvalue;
 		  dist += 2*pi* raio* pulso;
 		  
+		  if(vel> maxvel){
+			  maxvel=vel;
+		  }
+		  
 		  sprintf(bufferv,"%02d",vel);
 		  sprintf(bufferd,"%02d",dist);
+		  sprintf(buffermax,"%02d",maxvel);
 		  
 		  
 		  font_draw_text(&arial_72, bufferv, 50, 150, 1);
@@ -348,6 +365,11 @@ int main(void) {
 		  }
 		  font_draw_text(&calibri_36, "Distancia:", 50, 250, 1);
 		  font_draw_text(&arial_72, bufferd, 50, 300, 1);
+		  
+		  font_draw_text(&calibri_36, "V max:", 50, 400, 1);
+		  font_draw_text(&calibri_36, buffermax, 200, 400, 1);
+		  
+		  
 		  
 		  
 		  // reinicia RTT para gerar um novo IRQ

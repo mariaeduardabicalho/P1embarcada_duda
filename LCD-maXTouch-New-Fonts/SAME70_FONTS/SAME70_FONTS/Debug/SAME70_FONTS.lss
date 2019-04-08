@@ -1692,12 +1692,12 @@ int main(void) {
   400b40:	483d      	ldr	r0, [pc, #244]	; (400c38 <main+0x2b0>)
   400b42:	4c2d      	ldr	r4, [pc, #180]	; (400bf8 <main+0x270>)
   400b44:	47a0      	blx	r4
-		  if (dv >0){
+		  if (dv <0){
   400b46:	4b36      	ldr	r3, [pc, #216]	; (400c20 <main+0x298>)
   400b48:	681b      	ldr	r3, [r3, #0]
   400b4a:	2b00      	cmp	r3, #0
-  400b4c:	dd08      	ble.n	400b60 <main+0x1d8>
-			  font_draw_text(&calibri_36, "Velocidade: ^", 50, 100, 1);
+  400b4c:	da08      	bge.n	400b60 <main+0x1d8>
+			  font_draw_text(&calibri_36, "Velocidade: ->", 50, 100, 1);
   400b4e:	2301      	movs	r3, #1
   400b50:	9300      	str	r3, [sp, #0]
   400b52:	2364      	movs	r3, #100	; 0x64
@@ -1709,7 +1709,7 @@ int main(void) {
   400b5e:	e007      	b.n	400b70 <main+0x1e8>
 		  }
 		  else{
-			  font_draw_text(&calibri_36, "Velocidade: \/", 50, 100, 1);
+			  font_draw_text(&calibri_36, "Velocidade: <-", 50, 100, 1);
   400b60:	2301      	movs	r3, #1
   400b62:	9300      	str	r3, [sp, #0]
   400b64:	2364      	movs	r3, #100	; 0x64
@@ -34799,8 +34799,8 @@ extern caddr_t _sbrk(int incr)
 0044d578 <arial_72>:
   44d578:	000a 0000 d528 0044 3930 0000 6425 203a     ....(.D.09..%d: 
   44d588:	6425 203a 6425 0000 3025 6432 0000 0000     %d: %d..%02d....
-  44d598:	6556 6f6c 6963 6164 6564 203a 005e 0000     Velocidade: ^...
-  44d5a8:	6556 6f6c 6963 6164 6564 203a 002f 0000     Velocidade: /...
+  44d598:	6556 6f6c 6963 6164 6564 203a 3e2d 0000     Velocidade: ->..
+  44d5a8:	6556 6f6c 6963 6164 6564 203a 2d3c 0000     Velocidade: <-..
   44d5b8:	6944 7473 6e61 6963 3a61 0000               Distancia:..
 
 0044d5c4 <_global_impure_ptr>:

@@ -296,10 +296,10 @@ int main(void) {
 		  
 		  font_draw_text(&arial_72, bufferv, 50, 150, 1);
 		  if (dv <0){
-			  font_draw_text(&calibri_36, "Velocidade: ^", 50, 100, 1);
+			  font_draw_text(&calibri_36, "Velocidade: ->", 50, 100, 1);
 		  }
 		  else{
-			  font_draw_text(&calibri_36, "Velocidade:\/", 50, 100, 1);
+			  font_draw_text(&calibri_36, "Velocidade: <-", 50, 100, 1);
 		  }
 		  font_draw_text(&calibri_36, "Distancia:", 50, 250, 1);
 		  font_draw_text(&arial_72, bufferd, 50, 300, 1);
